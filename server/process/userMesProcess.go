@@ -48,12 +48,18 @@ func LoginProcess(conn net.Conn, recvMessagePtr *obj.Message) error {
 	if writeMessageErr != nil {
 		return writeMessageErr
 	}
-	// 登录成功则服务器端更新在线列表
+	// 1.服务器端更新在线列表
+	// 2.为本用户建立ResFwd收发管道
+	// 3.向其他用户通知此ID已上线
 	if loginResMes.Code == obj.CODE_LOGIN_SUCCESS {
 		AddOnlineStruct(OnlineStruct{loginMes.UserID, loginMes.UserName, conn})
+		
+		var resFwdChan chan obj.ResFwdChatMes = make(chan obj.ResFwdChatMes, 1)
+		G_ResFwdMap.Store(loginMes.UserID, resFwdChan)
+	
+		OnlineNotify(loginMes.UserID, loginMes.UserName, true)
 	}
-	// 向其他用户通知此ID已上线
-	OnlineNotify(loginMes.UserID, loginMes.UserName, true)
+	
 
 	// 检查在线列表  ID/总数
 	// sum, tmpSli := IterateOnlineMap()

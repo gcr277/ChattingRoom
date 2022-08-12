@@ -13,7 +13,7 @@ var (
 	ResChatMesChan chan string = make(chan string, 1)
 
 )
-func ServerPushProcess(gconn net.Conn){
+func ServerPushProcess(gconn net.Conn, gUser obj.User){
 	var serverPushMes obj.Message
 	for {
 		//fmt.Printf("[debug-%v]:goroutine waiting for serverpush\n",info.CurrFuncName())
@@ -35,6 +35,7 @@ func ServerPushProcess(gconn net.Conn){
 			GOLListChan <- serverPushMes.Data
 		case obj.ChatMesType:
 			var resFwdChatMes obj.ResFwdChatMes
+			resFwdChatMes.DstUserID = gUser.UserID
 			var recvChatMes obj.ChatMes
 			unmarshalErr := json.Unmarshal([]byte(serverPushMes.Data), &recvChatMes)
 			if unmarshalErr != nil {

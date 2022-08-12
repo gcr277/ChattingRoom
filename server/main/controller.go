@@ -7,8 +7,11 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"encoding/json"
+	_"sync"
 )
-var resFwdChatMesChan chan string = make(chan string, 1)
+
+
 // 处理客户端连接发来的消息
 func handle(conn net.Conn) error {
 	defer conn.Close()
@@ -43,12 +46,22 @@ func handle(conn net.Conn) error {
 				fmt.Printf("[debug-%v]:%v\n", info.CurrFuncName(), resOLErr)
 			}
 		case obj.ChatMesType:
-			forwardOrDumpErr := process.ForwardOrDumpProcess(conn, &recvMessage, resFwdChatMesChan)
+			forwardOrDumpErr := process.ForwardOrDumpProcess(conn, &recvMessage)
 			if forwardOrDumpErr != nil {
 				fmt.Printf("[debug-%v]:%v\n", info.CurrFuncName(), forwardOrDumpErr)
 			}
 		case obj.ResFwdChatMesType:
-			resFwdChatMesChan <- recvMessage.Data
+			var resFwdChatMes obj.ResFwdChatMes
+			unmarshalErr := json.Unmarshal([]byte(recvMessage.Data), &resFwdChatMes)
+			if unmarshalErr != nil {
+				fmt.Printf("[debug-%v]:%v\n", info.CurrFuncName(), unmarshalErr)
+				resFwdChatMes.Code = obj.CODE_SERVER_RECV_SUCCESS_DST_RECV_FAIL
+				resFwdChatMes.ErrorText = obj.ERROR_SERVER_RECV_SUCCESS_DST_RECV_FAIL.Error()
+			}
+			var resFwdChan chan obj.ResFwdChatMes
+			resFwdChanI, _ := process.G_ResFwdMap.Load(resFwdChatMes.DstUserID)
+			resFwdChan = resFwdChanI.(chan obj.ResFwdChatMes)
+			resFwdChan <- resFwdChatMes
 			
 		default:
 			unknownTypeErr := errors.New("Unknown message type")

@@ -8,9 +8,12 @@ import (
 	"encoding/json"
 	"net"
 	"errors"
+	"sync"
 )
-
-func ForwardOrDumpProcess(conn net.Conn, recvMessagePtr *obj.Message, resFwdChatMesChan chan string)(fodErr error){
+var (
+	G_ResFwdMap sync.Map
+)
+func ForwardOrDumpProcess(conn net.Conn, recvMessagePtr *obj.Message)(fodErr error){
 	var resChatMes obj.ResChatMes
 	
 	var chatMes obj.ChatMes
@@ -25,7 +28,7 @@ func ForwardOrDumpProcess(conn net.Conn, recvMessagePtr *obj.Message, resFwdChat
 
 	
 	if isOnline{ // 直接向目标转发
-		fwdErr := ForwardProcess(dstStruct.ConnOfUser, &chatMes, resFwdChatMesChan)
+		fwdErr := ForwardProcess(dstStruct.ConnOfUser, &chatMes)
 		//fmt.Printf("**************%v\n", fwdErr)
 		if fwdErr != nil { //转发失败，转储到离线消息
 			dumpErr := service.DumpForDst(chatMes.SrcUser.UserID, chatMes.DstUser.UserID)
@@ -72,7 +75,7 @@ func ForwardOrDumpProcess(conn net.Conn, recvMessagePtr *obj.Message, resFwdChat
 	return fodErr
 }
 
-func ForwardProcess(connOfDst net.Conn, chatMesPtr *obj.ChatMes, resFwdChatMesChan chan string)error{
+func ForwardProcess(connOfDst net.Conn, chatMesPtr *obj.ChatMes)error{
 	var fwdMessage obj.Message
 	fwdMessage.Type = obj.ChatMesType
 	fwdMessageDataSli, marshalErr := json.Marshal(*chatMesPtr)
@@ -85,20 +88,25 @@ func ForwardProcess(connOfDst net.Conn, chatMesPtr *obj.ChatMes, resFwdChatMesCh
 	if writeMessageErr != nil {
 		return writeMessageErr
 	}
+	var resFwdChan chan obj.ResFwdChatMes
 
+		resFwdChanI, contains := G_ResFwdMap.Load((*chatMesPtr).DstUser.UserID)
+		if contains{
+			resFwdChan = resFwdChanI.(chan obj.ResFwdChatMes)
+		}else{
+			return obj.ERROR_SERVER_RECV_SUCCESS_DST_RECV_FAIL //目标下线
+		}
+
+	
 	select{
-		case data := <- resFwdChatMesChan:
-			var resFwdChatMes obj.ResFwdChatMes
-			unmarshalErr := json.Unmarshal([]byte(data), &resFwdChatMes)
-			if unmarshalErr != nil {
-				return unmarshalErr
-			}
+		case resFwdChatMes := <- resFwdChan:
 			if resFwdChatMes.Code == obj.CODE_DST_RECV_SUCCESS{
 				return nil
 			}else{
 				return errors.New(resFwdChatMes.ErrorText)
 			}
-		//default:
+			
 	}
 	//return obj.ERROR_UNKNOWN_IN_SERVER
+	
 }

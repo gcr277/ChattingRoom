@@ -98,6 +98,7 @@ type ResChatMes struct{
 }
 
 type ResFwdChatMes struct{
+	DstUserID int 			`json:"dstUserID"`
 	Code int				`json:"code"`	
 	ErrorText string		`json:"errortext"`
 }
