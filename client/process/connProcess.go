@@ -6,7 +6,7 @@ import (
 	"ChattingRoom/common/info"
 )
 
-func DialProcess() net.Conn {
+func DialProcess() (net.Conn, error) {
 	// dial to server
 	conn, dialErr := net.Dial("tcp","localhost:8888")
 	if dialErr != nil{
@@ -14,5 +14,5 @@ func DialProcess() net.Conn {
 	}else{
 		fmt.Printf("[client-%v]:connected to server!\n", info.CurrFuncName())
 	}
-	return conn
+	return conn, dialErr
 }

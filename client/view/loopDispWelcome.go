@@ -24,7 +24,7 @@ loopWelcome:
 		case W_LOGIN, W_REGISTER, W_EXIT:
 			break loopWelcome
 		default:
-			fmt.Printf("[client-%v]:illegal input, input again: ", info.CurrFuncName())
+			fmt.Printf("[client-%v]:illegal input!\n", info.CurrFuncName())
 		}
 	}
 	return key

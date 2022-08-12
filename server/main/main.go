@@ -4,14 +4,19 @@ import (
 	
 	"fmt"
 	_ "github.com/garyburd/redigo/redis"
-	_ "ChattingRoom/common/message"
+	_ "ChattingRoom/common/obj"
 	"ChattingRoom/common/info"
+	"ChattingRoom/server/dao"
+	"time"
 	"net"
 
 )
 
-func main() {
 
+func main() {
+	// init redis conn pool
+	dao.GlobalPoolInit("tcp", ":6379", 16, 0, 300 * time.Second)
+	defer dao.GlobalPoolClose()
 	// listen
 	listen, ListenErr := net.Listen("tcp", ":8888")
 	if ListenErr != nil {
@@ -19,6 +24,7 @@ func main() {
 		return
 	}
 	defer listen.Close()
+	
 	// wait for connection
 	for {
 		conn, connErr := listen.Accept()

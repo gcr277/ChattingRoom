@@ -1,4 +1,4 @@
-package message
+package obj
 import (
 	"fmt"
 	"io"
@@ -8,10 +8,20 @@ import (
 )
 // type of Message
 const (
-	LoginMesType = iota
-	LoginResMesType
-	RegisterMesType
-	RegisterResMesType
+	LoginMesType = iota				//0
+	LoginResMesType					//1
+
+	RegisterMesType					//2
+	RegisterResMesType				//3
+	
+	OnlineMesType					//4
+
+	RequestOnlineListMesType		//5
+	ResOnlineListMesType			//6
+
+	ChatMesType						//7
+	ResChatMesType					//8
+	ResFwdChatMesType				//9
 )
 
 /***********************************************************************/
@@ -43,7 +53,7 @@ func (this *Message)WriteMessageStructIntoConn(conn net.Conn) error {
 	if marshalErr != nil {
 		return marshalErr
 	}
-	fmt.Printf("[debug-%v]:%v\n", info.CurrFuncName(), string(resMessageSli))
+	//fmt.Printf("[debug-%v]:%v\n", info.CurrFuncName(), string(resMessageSli))
 
 	_, writeErr := conn.Write(resMessageSli)
 	if writeErr != nil{
@@ -54,25 +64,40 @@ func (this *Message)WriteMessageStructIntoConn(conn net.Conn) error {
 }
 /*****************************************************************/
 
-
-// data of Message
-
-type User struct{
-	UserID int			`json:"userID"`
-	UserPasswd string	`json:"userPasswd"`
-	UserName string		`json:"userName"`
+// Login Message
+type LoginMes struct{
+	User
 }
-type LoginMes User
-
 type LoginResMes struct{
-	Code int 		`json:"code"`	// 500:未注册  200:注册成功
-	ErrorText string	`json:"errortext"`
+	Code int 				`json:"code"`	//200登录成功,300未注册,400密码错误
+	ErrorText string		`json:"errortext"`
+	SearchedUserName string	`json:"searchedUserName"`
 }
-
+// Reg Message
 type RegisterMes struct{
-
+	User
 }
 
 type RegisterResMes struct{
-	
+	Code int 				`json:"code"`	
+	ErrorText string		`json:"errortext"`
+}
+
+type RequestOnlineListMes int // userID
+type ResOnlineListMes []OnlineMes //
+
+type ChatMes struct{
+	SrcUser UserPublicInfo
+	DstUser UserPublicInfo
+	Content string
+}
+
+type ResChatMes struct{
+	Code int				`json:"code"`	
+	ErrorText string		`json:"errortext"`
+}
+
+type ResFwdChatMes struct{
+	Code int				`json:"code"`	
+	ErrorText string		`json:"errortext"`
 }
