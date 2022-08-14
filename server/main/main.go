@@ -18,7 +18,7 @@ func main() {
 	dao.GlobalPoolInit("tcp", ":6379", 16, 0, 300 * time.Second)
 	defer dao.GlobalPoolClose()
 	// listen
-	listen, ListenErr := net.Listen("tcp", ":8888")
+	listen, ListenErr := net.Listen("tcp", "192.168.157.137:8888")
 	if ListenErr != nil {
 		fmt.Printf("[server-%v]:[listen fail...](%v)\n", info.CurrFuncName(), ListenErr)
 		return

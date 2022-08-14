@@ -18,7 +18,7 @@ loopWelcome:
 			"\t2 register\n" +
 			"\t3 exit\n" +
 			"input number: ")
-		fmt.Scanf("%d", &key)
+		fmt.Scanf("%d\n", &key)
 
 		switch key {
 		case W_LOGIN, W_REGISTER, W_EXIT:

@@ -13,7 +13,7 @@ func DispSelAndSendMes()(int, string){
 	fmt.Printf("----------------- send message -----------------\n")
 	for {
 		fmt.Printf("select user (NO.):\n")
-		fmt.Scanf("%d", &num)
+		fmt.Scanf("%d\n", &num)
 		if selectNumIsLegal(num){
 			break
 		}else{
