@@ -1,15 +1,13 @@
 # ChattingRoom
-### Terminal 1
+### Compile
 ```
 mv ChattingRoom $GOPATH/src
 cd $GOPATH
+[server]
 go build -o bin/ChattingRoom/server ChattingRoom/server/main
+
+[client-linux]
 go build -o bin/ChattingRoom/client ChattingRoom/client/main
-cd $GOPATH/bin/ChattingRoom
-./server
-```
-### Terminal 2
-```
-cd $GOPATH/bin/ChattingRoom
-./client
-```
+
+[client-windows]
+env GOOS=windows go build -o bin/chattingRoom/client.exe ChattingRoom/client/main

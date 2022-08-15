@@ -33,8 +33,7 @@ func WelcomeSwitch(keyWelcome int){
 				fmt.Printf("[client-%v]:登录失败(%v)\n", info.CurrFuncName(), loginErr)
 			}else{
 				fmt.Printf("[client-%v]:登录成功!\n", info.CurrFuncName())
-				// 
-				// 再开一个协程来接收服务器推送
+				// 开一个协程来接收服务器推送
 				go process.ServerPushProcess(GConn, GUser)
 				
 				LoginSuccess()
